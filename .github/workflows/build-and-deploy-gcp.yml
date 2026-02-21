@@ -38,3 +38,4 @@ jobs:
           path: bundles/osgi/modules/
           destination: ${{ secrets.GCS_BUCKET_NAME }}/workspace_build_${{ github.run_number }}/osgi/
           parent: false
+          process_gcloudignore: false
