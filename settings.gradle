@@ -1,6 +1,7 @@
 buildscript {
 	dependencies {
 		classpath group: "com.liferay", name: "com.liferay.gradle.plugins.workspace", version: "13.1.0"
+		classpath "org.yaml:snakeyaml:2.2"
 	}
 
 	repositories {

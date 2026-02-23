@@ -1,0 +1,15 @@
+assemble:
+- from: batch
+  into: batch
+    
+ticketing-batch-oauth-application-headless-server:
+    name: Ticketing Batch OAuth Application Headless Server
+    scopes:
+        - Liferay.Headless.Batch.Engine.everything
+        - Liferay.Object.Admin.REST.everything
+    type: oAuthApplicationHeadlessServer
+
+ticketing-batch:
+    name: Ticketing System Batch
+    oAuthApplicationHeadlessServer: ticketing-batch-oauth-application-headless-server
+    type: batch

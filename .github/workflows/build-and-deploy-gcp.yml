@@ -9,6 +9,12 @@ jobs:
       contents: 'read'
       id-token: 'write'
 
+    env:
+      GCP_REGION: ${{ secrets.GCP_REGION || 'us-central1' }}
+      GAR_REPOSITORY: ${{ secrets.GCP_GAR_REPOSITORY || 'my-liferay-repo' }}
+      GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+      GITHUB_SHA: ${{ github.sha }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -20,17 +26,25 @@ jobs:
           distribution: 'microsoft'
           cache: 'gradle'
 
-      - name: Build and Deploy to local bundle
-        run: |
-          chmod +x gradlew
-          ./gradlew build deploy
-
       - name: Authenticate to Google Cloud
         id: auth
         uses: google-github-actions/auth@v2
         with:
           workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for GAR
+        run: |
+          gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev --quiet
+
+      - name: Build and Push (OSGi + Client Extensions)
+        run: |
+          chmod +x gradlew
+          # This builds OSGi modules AND runs client extension build/push tasks
+          ./gradlew build deploy
 
       - name: Upload OSGi modules to GCS
         uses: google-github-actions/upload-cloud-storage@v2

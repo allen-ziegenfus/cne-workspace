@@ -1,0 +1,79 @@
+if (project.path.startsWith(":client-extensions:")) {
+
+    ext {
+        getGcpProjectId = {
+            return System.getenv("GCP_PROJECT_ID") ?: "my-project-id"
+        }
+
+        getGcpRegion = {
+            return System.getenv("GCP_REGION") ?: "us-central1"
+        }
+
+        getGarRepository = {
+            return System.getenv("GAR_REPOSITORY") ?: "my-liferay-repo"
+        }
+
+        getImageName = {
+            return "${getGcpRegion()}-docker.pkg.dev/${getGcpProjectId()}/${getGarRepository()}/${project.name}"
+        }
+
+        getImageTag = {
+            return System.getenv("GITHUB_SHA")?.take(7) ?: "latest"
+        }
+
+        getFullImageName = {
+            return "${getImageName()}:${getImageTag()}"
+        }
+    }
+
+    afterEvaluate {
+        if (tasks.findByName("assembleClientExtension")) {
+            // Task to build the Docker image
+            task buildImage(type: com.bmuschko.gradle.docker.tasks.image.DockerBuildImage) {
+                dependsOn assembleClientExtension
+                inputDir = file("build/liferay-client-extension-build")
+                images.add(getFullImageName())
+                images.add("${getImageName()}:latest")
+            }
+
+            // Task to push the Docker image to GAR
+            task pushImage(type: com.bmuschko.gradle.docker.tasks.image.DockerPushImage) {
+                dependsOn buildImage
+                images.add(getFullImageName())
+                images.add("${getImageName()}:latest")
+            }
+
+            // Custom task to update client-extension.yaml with the remote image
+            task updateClientExtensionYaml {
+                doLast {
+                    def yamlFile = file("client-extension.yaml")
+                    if (yamlFile.exists()) {
+                        def yaml = new org.yaml.snakeyaml.Yaml()
+                        def config = yaml.load(yamlFile.text)
+                        
+                        config.each { key, value ->
+                            if (value instanceof Map) {
+                                value.image = getFullImageName().toString()
+                            }
+                        }
+                        
+                        def buildYamlFile = file("build/liferay-client-extension-build/client-extension.yaml")
+                        if (buildYamlFile.parentFile.exists()) {
+                            def options = new org.yaml.snakeyaml.DumperOptions()
+                            options.setDefaultFlowStyle(org.yaml.snakeyaml.DumperOptions.FlowStyle.BLOCK)
+                            def dumper = new org.yaml.snakeyaml.Yaml(options)
+                            buildYamlFile.text = dumper.dump(config)
+                            println "[${project.name}] Updated client-extension.yaml with image: ${getFullImageName()}"
+                        }
+                    }
+                }
+            }
+
+            assembleClientExtension.finalizedBy updateClientExtensionYaml
+            
+            if (tasks.findByName("build")) {
+                build.dependsOn pushImage
+            }
+        }
+    }
+}

@@ -1,0 +1,59 @@
+[
+  {
+    "externalReferenceCode": "TICKET_OBJECT_DEFINITION",
+    "item": {
+      "active": true,
+      "description": {
+        "en_US": "A ticketing system object for managing support requests."
+      },
+      "label": {
+        "en_US": "Ticket"
+      },
+      "name": "Ticket",
+      "panelCategoryKey": "control_menu.manage",
+      "pluralLabel": {
+        "en_US": "Tickets"
+      },
+      "scope": "company",
+      "objectFields": [
+        {
+          "businessType": "text",
+          "label": {
+            "en_US": "Subject"
+          },
+          "name": "subject",
+          "required": true,
+          "type": "String"
+        },
+        {
+          "businessType": "longText",
+          "label": {
+            "en_US": "Description"
+          },
+          "name": "description",
+          "required": false,
+          "type": "String"
+        },
+        {
+          "businessType": "text",
+          "label": {
+            "en_US": "Priority"
+          },
+          "name": "priority",
+          "required": false,
+          "type": "String"
+        },
+        {
+          "businessType": "text",
+          "label": {
+            "en_US": "Status"
+          },
+          "name": "status",
+          "required": false,
+          "type": "String"
+        }
+      ]
+    },
+    "mainEntityResourcePath": "object-definitions"
+  }
+]
