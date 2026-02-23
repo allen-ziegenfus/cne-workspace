@@ -10,7 +10,7 @@ if (project.path.startsWith(":client-extensions:")) {
         }
 
         getGarRepository = {
-            return System.getenv("GAR_REPOSITORY") ?: "my-liferay-repo"
+            return System.getenv("GCP_GAR_REPOSITORY") ?: "my-liferay-repo"
         }
 
         getImageName = {
